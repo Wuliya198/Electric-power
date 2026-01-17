@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小组课堂互动答题系统 - 带删除功能版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-radius: 10px;
+            --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark-color);
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo span {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-item i {
+            font-size: 1rem;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .panel {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            flex: 1;
+            min-width: 280px;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .panel-title i {
+            font-size: 1.1rem;
+        }
+        
+        /* 答题面板样式 */
+        .answer-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .group-select {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .group-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .group-info {
+            flex-grow: 1;
+        }
+        
+        .group-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 3px;
+        }
+        
+        .group-role {
+            color: var(--gray-color);
+            font-size: 0.8rem;
+        }
+        
+        .phenomenon-structure {
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .phenomenon-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .phenomenon-label {
+            font-size: 1rem;
+            font-weight: 600;
+            min-width: 70px;
+        }
+        
+        .fill-input {
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            padding: 10px 12px;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 180px;
+            transition: var(--transition);
+        }
+        
+        .fill-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        /* 大屏显示面板 */
+        .screen-display {
+            flex: 2;
+            min-width: 600px;
+        }
+        
+        .screen-header {
+            background-color: var(--dark-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .screen-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .screen-content {
+            background-color: #1a1d28;
+            padding: 20px;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            min-height: 700px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .categories-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .category-input-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .category-input {
+            flex: 1;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 10px 15px;
+            font-size: 1rem;
+            color: white;
+            transition: var(--transition);
+        }
+        
+        .category-input:focus {
+            outline: none;
+            border-color: var(--success-color);
+        }
+        
+        .add-category-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .add-category-btn:hover {
+            background-color: #3ab3d8;
+        }
+        
+        .categories-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .category {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 12px 15px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 180px;
+            position: relative;
+            font-size: 0.9rem;
+        }
+        
+        .category-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .category-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+        
+        .category-delete:hover {
+            color: var(--warning-color);
+        }
+        
+        /* 答案卡片样式 - 带删除按钮 */
+        .answers-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 180px; /* 增加高度以容纳删除按钮 */
+            gap: 15px;
+            flex-grow: 1;
+        }
+        
+        .answer-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            cursor: move;
+            transition: var(--transition);
+            position: relative;
+            animation: fadeIn 0.5s ease-out;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .answer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .answer-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .answer-group-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+        
+        .answer-group-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            margin-right: auto;
+        }
+        
+        .answer-time {
+            color: var(--gray-color);
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            margin-right: 5px;
+        }
+        
+        /* 删除按钮样式 */
+        .answer-delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 10;
+        }
+        
+        .answer-delete-btn:hover {
+            color: var(--warning-color);
+            background-color: rgba(247, 37, 133, 0.1);
+        }
+        
+        .answer-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8px 0;
+            overflow: visible;
+        }
+        
+        .phenomenon-display {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .phenomenon-label-sm {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            margin-right: 5px;
+        }
+        
+        .phenomenon-desc {
+            font-size: 0.95rem;
+            color: var(--dark-color);
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        
+        .energy-conversion-display {
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            padding: 8px 10px;
+            text-align: center;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .energy-conversion-text {
+            font-size: 0.95rem;
+            color: var(--dark-color);
+            line-height: 1.3;
+        }
+        
+        .energy-fill {
+            font-weight: 700;
+            color: var(--primary-color);
+            padding: 0 2px;
+        }
+        
+        .answer-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .answer-category {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            background-color: var(--gray-color);
+        }
+        
+        .answer-error-tag {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            background-color: var(--warning-color);
+            margin-right: 5px;
+        }
+        
+        /* 控制面板 */
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .control-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+        
+        .control-label i {
+            color: var(--primary-color);
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .control-btn {
+            flex: 1;
+            min-width: 110px;
+            background-color: white;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            padding: 10px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .control-btn:hover {
+            background-color: #f8f9fa;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .control-btn.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* 统计面板 */
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            flex: 1;
+            min-width: 180px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-1 { background-color: var(--primary-color); }
+        .stat-2 { background-color: var(--warning-color); }
+        .stat-3 { background-color: var(--success-color); }
+        
+        .stat-info {
+            flex-grow: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: var(--gray-color);
+            font-size: 0.85rem;
+        }
+        
+        /* 分类区域样式 */
+        .category-area {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .category-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .category-answers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 180px;
+            gap: 12px;
+            min-height: 80px;
+        }
+        
+        /* 拖拽效果 */
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        .category-dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+        
+        .category-dropzone.drag-over {
+            border-color: var(--success-color);
+            background-color: rgba(76, 201, 240, 0.1);
+        }
+        
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 12px 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 300px;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .notification.hiding {
+            animation: slideOutRight 0.3s ease-out forwards;
+        }
+        
+        .notification-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+        }
+        
+        .notification.success .notification-icon { background-color: #4cc9f0; }
+        .notification.warning .notification-icon { background-color: #f72585; }
+        .notification.info .notification-icon { background-color: #4361ee; }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .screen-display {
+                min-width: 100%;
+            }
+            
+            .answers-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .category-answers {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .status-bar {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .answers-container {
+                grid-template-columns: 1fr;
+                grid-auto-rows: auto;
+            }
+            
+            .answer-card {
+                min-height: 170px;
+            }
+            
+            .category-answers {
+                grid-template-columns: 1fr;
+                grid-auto-rows: auto;
+            }
+            
+            .phenomenon-inputs {
+                flex-direction: column;
+            }
+            
+            .fill-input {
+                width: 100%;
+            }
+            
+            .input-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stat-card {
+                min-width: 150px;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--gray-color);
+            font-size: 0.8rem;
+            border-top: 1px solid #e9ecef;
+            margin-top: 20px;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .connected {
+            background-color: rgba(76, 201, 240, 0.2);
+            color: #4cc9f0;
+        }
+        
+        .disconnected {
+            background-color: rgba(247, 37, 133, 0.2);
+            color: #f72585;
+        }
+        
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 30px 15px;
+        }
+        
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            font-size: 0.95rem;
+        }
+        
+        .category-empty {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 25px 15px;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        .example-phenomena {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: var(--gray-color);
+            text-align: center;
+        }
+        
+        .example-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 5px;
+        }
+        
+        .example-item {
+            background-color: #f0f2f5;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        /* 确认删除对话框 */
+        .delete-confirmation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .delete-confirmation-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .delete-confirmation-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--warning-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .delete-confirmation-message {
+            font-size: 1rem;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .delete-confirmation-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .delete-confirm-btn, .delete-cancel-btn {
+            padding: 10px 25px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .delete-confirm-btn {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .delete-confirm-btn:hover {
+            background-color: #e11570;
+        }
+        
+        .delete-cancel-btn {
+            background-color: #e9ecef;
+            color: var(--dark-color);
+        }
+        
+        .delete-cancel-btn:hover {
+            background-color: #dde1e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-users"></i>
+                <div>
+                    <h1>小组课堂互动答题系统</h1>
+                    <span>带删除功能版 - 教师可删除错误答案</span>
+                </div>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <i class="fas fa-users"></i>
+                    <span>在线小组: <span id="online-count">10</span></span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-comments"></i>
+                    <span>答题总数: <span id="answer-count">0</span></span>
+                </div>
+                <div class="connection-status connected">
+                    <i class="fas fa-wifi"></i>
+                    <span>已连接</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <!-- 小组答题面板 -->
+            <div class="panel answer-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-pencil-alt"></i>
+                        小组答题区
+                    </h2>
+                    <div class="group-select">
+                        <div class="group-avatar" id="current-group-avatar">01</div>
+                        <div class="group-info">
+                            <div class="group-name" id="current-group-name">小组01</div>
+                            <div class="group-role">小组</div>
+                        </div>
+                        <select id="group-select" class="control-btn">
+                            <option value="group01">小组01</option>
+                            <option value="group02">小组02</option>
+                            <option value="group03">小组03</option>
+                            <option value="group04">小组04</option>
+                            <option value="group05">小组05</option>
+                            <option value="group06">小组06</option>
+                            <option value="group07">小组07</option>
+                            <option value="group08">小组08</option>
+                            <option value="group09">小组09</option>
+                            <option value="group10">小组10</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="answer-input-container">
+                    <div class="phenomenon-structure">
+                        现象：（<span style="color: var(--primary-color); font-weight: bold;">现象描述</span>）<br>
+                        <span style="color: var(--primary-color); font-weight: bold;">能量形式1</span> 能转化为 <span style="color: var(--primary-color); font-weight: bold;">能量形式2</span> 能。
+                    </div>
+                    
+                    <div class="phenomenon-inputs">
+                        <div class="input-row">
+                            <div class="phenomenon-label">现象描述：</div>
+                            <input type="text" class="fill-input" id="phenomenon-desc" placeholder="如：水力发电">
+                        </div>
+                        
+                        <div class="input-row">
+                            <div class="phenomenon-label">能量形式1：</div>
+                            <input type="text" class="fill-input" id="energy-input-1" placeholder="转化前的能量形式">
+                        </div>
+                        
+                        <div class="input-row">
+                            <div class="phenomenon-label">能量形式2：</div>
+                            <input type="text" class="fill-input" id="energy-input-2" placeholder="转化后的能量形式">
+                        </div>
+                    </div>
+                    
+                    <div class="example-phenomena">
+                        <div>示例：</div>
+                        <div class="example-list">
+                            <div class="example-item">水力发电：机械能→电能</div>
+                            <div class="example-item">太阳能电池：光能→电能</div>
+                            <div class="example-item">电池放电：化学能→电能</div>
+                        </div>
+                    </div>
+                    
+                    <button class="submit-btn" id="submit-answer">
+                        <i class="fas fa-paper-plane"></i>
+                        提交答案
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 大屏显示面板 -->
+            <div class="panel screen-display">
+                <div class="screen-header">
+                    <h2 class="screen-title">课堂大屏展示</h2>
+                    <div class="status-item">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>实时更新</span>
+                    </div>
+                </div>
+                
+                <div class="screen-content">
+                    <div class="categories-container">
+                        <div class="category-input-container">
+                            <input type="text" class="category-input" id="category-input" placeholder="请输入分类标准（如：机械能转化）">
+                            <button class="add-category-btn" id="add-category-btn">
+                                <i class="fas fa-plus"></i>
+                                添加分类
+                            </button>
+                        </div>
+                        
+                        <div id="categories-list" class="categories-list">
+                            <!-- 分类将动态添加到这里 -->
+                        </div>
+                    </div>
+                    
+                    <div class="category-areas" id="category-areas">
+                        <!-- 分类区域将动态生成 -->
+                        <div class="empty-state" id="no-categories-message">
+                            <i class="fas fa-tags"></i>
+                            <h3>暂无分类</h3>
+                            <p>请在上方输入分类标准并添加分类</p>
+                        </div>
+                    </div>
+                    
+                    <div class="answers-container" id="uncategorized-container">
+                        <!-- 未分类的答案将显示在这里 -->
+                        <div class="empty-state" id="no-answers-message">
+                            <i class="fas fa-inbox"></i>
+                            <h3>暂无未分类答案</h3>
+                            <p>等待小组提交答案...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 控制面板 -->
+            <div class="panel controls-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-sliders-h"></i>
+                        控制面板
+                    </h2>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <i class="fas fa-filter"></i>
+                        答案筛选
+                    </div>
+                    <div class="btn-group">
+                        <button class="control-btn active" data-filter="all">全部</button>
+                        <button class="control-btn" data-filter="uncategorized">未分类</button>
+                        <button class="control-btn" id="show-by-category">按分类查看</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <i class="fas fa-cog"></i>
+                        显示设置
+                    </div>
+                    <div class="btn-group">
+                        <button class="control-btn" id="toggle-animations">
+                            <i class="fas fa-play-circle"></i>
+                            开启动画
+                        </button>
+                        <button class="control-btn" id="clear-all">
+                            <i class="fas fa-trash-alt"></i>
+                            清空所有
+                        </button>
+                        <button class="control-btn" id="export-data">
+                            <i class="fas fa-download"></i>
+                            导出数据
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <i class="fas fa-broadcast-tower"></i>
+                        连接管理
+                    </div>
+                    <div class="btn-group">
+                        <button class="control-btn" id="simulate-groups">
+                            <i class="fas fa-user-plus"></i>
+                            模拟小组
+                        </button>
+                        <button class="control-btn" id="toggle-connection">
+                            <i class="fas fa-plug"></i>
+                            断开连接
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 统计数据 -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-1">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-online">10</div>
+                            <div class="stat-label">在线小组</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon stat-2">
+                            <i class="fas fa-comment-dots"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-answers">0</div>
+                            <div class="stat-label">答案总数</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon stat-3">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-classified">0%</div>
+                            <div class="stat-label">已分类答案</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>小组课堂互动答题系统 - 带删除功能版 &copy; 2023 | 专为互动课堂设计 | 技术支持: HTML5 Drag & Drop API</p>
+        </footer>
+    </div>
+
+    <!-- 删除确认对话框 -->
+    <div class="delete-confirmation" id="delete-confirmation" style="display: none;">
+        <div class="delete-confirmation-content">
+            <div class="delete-confirmation-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                确认删除
+            </div>
+            <div class="delete-confirmation-message" id="delete-confirmation-message">
+                您确定要删除这个答案吗？此操作不可撤销。
+            </div>
+            <div class="delete-confirmation-buttons">
+                <button class="delete-confirm-btn" id="delete-confirm-btn">确认删除</button>
+                <button class="delete-cancel-btn" id="delete-cancel-btn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 小组数据
+        const groups = [
+            { id: 'group01', name: '小组01', avatar: '01', color: '#4361ee' },
+            { id: 'group02', name: '小组02', avatar: '02', color: '#f72585' },
+            { id: 'group03', name: '小组03', avatar: '03', color: '#4cc9f0' },
+            { id: 'group04', name: '小组04', avatar: '04', color: '#7209b7' },
+            { id: 'group05', name: '小组05', avatar: '05', color: '#3a0ca3' },
+            { id: 'group06', name: '小组06', avatar: '06', color: '#2ec4b6' },
+            { id: 'group07', name: '小组07', avatar: '07', color: '#ff9f1c' },
+            { id: 'group08', name: '小组08', avatar: '08', color: '#e71d36' },
+            { id: 'group09', name: '小组09', avatar: '09', color: '#9d4edd' },
+            { id: 'group10', name: '小组10', avatar: '10', color: '#ff6d00' }
+        ];
+        
+        // 初始答案数据
+        let answers = [];
+        
+        // 分类数据
+        let categories = [];
+        
+        // 当前小组
+        let currentGroup = groups[0];
+        let connectionStatus = true;
+        let animationsEnabled = true;
+        let viewMode = 'all'; // 'all', 'uncategorized', 'byCategory'
+        
+        // 删除相关变量
+        let answerToDelete = null;
+        
+        // DOM元素
+        const phenomenonDescInput = document.getElementById('phenomenon-desc');
+        const energyInput1 = document.getElementById('energy-input-1');
+        const energyInput2 = document.getElementById('energy-input-2');
+        const submitBtn = document.getElementById('submit-answer');
+        const uncategorizedContainer = document.getElementById('uncategorized-container');
+        const noAnswersMessage = document.getElementById('no-answers-message');
+        const groupSelect = document.getElementById('group-select');
+        const currentGroupAvatar = document.getElementById('current-group-avatar');
+        const currentGroupName = document.getElementById('current-group-name');
+        const onlineCountEl = document.getElementById('online-count');
+        const answerCountEl = document.getElementById('answer-count');
+        const statOnlineEl = document.getElementById('stat-online');
+        const statAnswersEl = document.getElementById('stat-answers');
+        const statClassifiedEl = document.getElementById('stat-classified');
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        const categoryInput = document.getElementById('category-input');
+        const addCategoryBtn = document.getElementById('add-category-btn');
+        const categoriesList = document.getElementById('categories-list');
+        const categoryAreas = document.getElementById('category-areas');
+        const noCategoriesMessage = document.getElementById('no-categories-message');
+        
+        // 删除确认对话框元素
+        const deleteConfirmation = document.getElementById('delete-confirmation');
+        const deleteConfirmationMessage = document.getElementById('delete-confirmation-message');
+        const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+        const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+        
+        // 颜色数组用于分类
+        const categoryColors = [
+            '#4361ee', '#f72585', '#4cc9f0', '#3a0ca3', 
+            '#2ec4b6', '#ff9f1c', '#e71d36', '#9d4edd',
+            '#7209b7', '#ff6d00'
+        ];
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initGroupSelection();
+            renderUncategorizedAnswers();
+            updateStats();
+            setupEventListeners();
+            simulateRealTimeUpdates();
+            
+            // 添加一些示例分类
+            addExampleCategories();
+            
+            // 添加一些示例答案用于演示
+            addExampleAnswers();
+        });
+        
+        // 初始化小组选择
+        function initGroupSelection() {
+            groupSelect.addEventListener('change', function() {
+                const selectedGroup = groups.find(g => g.id === this.value);
+                if (selectedGroup) {
+                    currentGroup = selectedGroup;
+                    currentGroupAvatar.textContent = selectedGroup.avatar;
+                    currentGroupAvatar.style.background = `linear-gradient(135deg, ${selectedGroup.color}, ${adjustColor(selectedGroup.color, -20)})`;
+                    currentGroupName.textContent = selectedGroup.name;
+                }
+            });
+        }
+        
+        // 添加示例分类
+        function addExampleCategories() {
+            const exampleCategories = [
+                '机械能转化',
+                '电能转化',
+                '化学能转化',
+                '热能转化',
+                '光能转化'
+            ];
+            
+            exampleCategories.forEach(category => {
+                addCategory(category);
+            });
+        }
+        
+        // 添加示例答案
+        function addExampleAnswers() {
+            const exampleAnswers = [
+                { groupId: 'group01', phenomenonDesc: '水力发电', energy1: '机械', energy2: '电' },
+                { groupId: 'group02', phenomenonDesc: '太阳能电池', energy1: '太阳', energy2: '电' },
+                { groupId: 'group03', phenomenonDesc: '电池放电', energy1: '化学', energy2: '电' },
+                { groupId: 'group04', phenomenonDesc: '电灯发光', energy1: '电', energy2: '光' },
+                { groupId: 'group05', phenomenonDesc: '摩擦生热', energy1: '机械', energy2: '热' },
+                { groupId: 'group06', phenomenonDesc: '错误示例', energy1: '电能', energy2: '机械能' }
+            ];
+            
+            exampleAnswers.forEach((answer, index) => {
+                const group = groups.find(g => g.id === answer.groupId);
+                const newAnswer = {
+                    id: answers.length + 1,
+                    groupId: answer.groupId,
+                    phenomenonDesc: answer.phenomenonDesc,
+                    energy1: answer.energy1,
+                    energy2: answer.energy2,
+                    categoryId: null,
+                    timestamp: getCurrentTime(),
+                    color: group.color
+                };
+                
+                answers.push(newAnswer);
+            });
+            
+            renderUncategorizedAnswers();
+            updateStats();
+        }
+        
+        // 添加分类
+        function addCategory(name) {
+            if (!name.trim()) {
+                showNotification('请输入分类名称', 'warning', 'fa-exclamation-triangle');
+                return;
+            }
+            
+            const categoryId = `category-${Date.now()}`;
+            const colorIndex = categories.length % categoryColors.length;
+            const color = categoryColors[colorIndex];
+            
+            const category = {
+                id: categoryId,
+                name: name,
+                color: color,
+                icon: 'fa-tag'
+            };
+            
+            categories.push(category);
+            
+            // 添加分类标签到列表
+            addCategoryTag(category);
+            
+            // 添加分类区域
+            addCategoryArea(category);
+            
+            // 清空输入框
+            categoryInput.value = '';
+            
+            // 隐藏"暂无分类"消息
+            if (noCategoriesMessage) {
+                noCategoriesMessage.style.display = 'none';
+            }
+            
+            // 显示通知
+            showNotification(`已添加分类: ${name}`, 'success', 'fa-tag');
+        }
+        
+        // 添加分类标签
+        function addCategoryTag(category) {
+            const categoryTag = document.createElement('div');
+            categoryTag.className = 'category';
+            categoryTag.setAttribute('data-category-id', category.id);
+            
+            categoryTag.innerHTML = `
+                <div class="category-icon" style="background-color: ${category.color};">
+                    <i class="fas ${category.icon}"></i>
+                </div>
+                <div>${category.name}</div>
+                <button class="category-delete" data-category-id="${category.id}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            categoriesList.appendChild(categoryTag);
+            
+            // 添加删除事件
+            const deleteBtn = categoryTag.querySelector('.category-delete');
+            deleteBtn.addEventListener('click', function() {
+                const categoryId = this.getAttribute('data-category-id');
+                deleteCategory(categoryId);
+            });
+            
+            // 设置拖放区域
+            setupCategoryDropzone(categoryTag, category.id);
+        }
+        
+        // 添加分类区域
+        function addCategoryArea(category) {
+            const categoryArea = document.createElement('div');
+            categoryArea.className = 'category-area';
+            categoryArea.id = `area-${category.id}`;
+            categoryArea.setAttribute('data-category-id', category.id);
+            
+            categoryArea.innerHTML = `
+                <div class="category-title">
+                    <span>${category.name}</span>
+                    <span class="category-count" id="count-${category.id}">0个答案</span>
+                </div>
+                <div class="category-answers" id="answers-${category.id}">
+                    <div class="category-empty">暂无答案，可将答案拖拽到此处</div>
+                </div>
+            `;
+            
+            categoryAreas.appendChild(categoryArea);
+            
+            // 设置拖放区域
+            setupCategoryDropzone(categoryArea, category.id);
+        }
+        
+        // 删除分类
+        function deleteCategory(categoryId) {
+            if (confirm('确定要删除这个分类吗？此分类下的答案将变为未分类状态。')) {
+                // 更新答案，将属于该分类的答案设为未分类
+                answers.forEach(answer => {
+                    if (answer.categoryId === categoryId) {
+                        answer.categoryId = null;
+                    }
+                });
+                
+                // 从分类数组中移除
+                categories = categories.filter(c => c.id !== categoryId);
+                
+                // 从DOM中移除分类标签
+                const categoryTag = document.querySelector(`[data-category-id="${categoryId}"]`);
+                if (categoryTag) {
+                    categoryTag.remove();
+                }
+                
+                // 从DOM中移除分类区域
+                const categoryArea = document.getElementById(`area-${categoryId}`);
+                if (categoryArea) {
+                    categoryArea.remove();
+                }
+                
+                // 更新UI
+                renderUncategorizedAnswers();
+                updateStats();
+                
+                // 如果没有分类了，显示"暂无分类"消息
+                if (categories.length === 0 && noCategoriesMessage) {
+                    noCategoriesMessage.style.display = 'block';
+                }
+                
+                showNotification('分类已删除', 'warning', 'fa-trash-alt');
+            }
+        }
+        
+        // 设置分类拖放区域
+        function setupCategoryDropzone(element, categoryId) {
+            element.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+            
+            element.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+            
+            element.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                
+                const answerId = e.dataTransfer.getData('text/plain');
+                
+                // 更新答案分类
+                updateAnswerCategory(parseInt(answerId), categoryId);
+            });
+        }
+        
+        // 渲染未分类答案
+        function renderUncategorizedAnswers() {
+            uncategorizedContainer.innerHTML = '';
+            
+            // 筛选未分类答案
+            const uncategorizedAnswers = answers.filter(answer => !answer.categoryId);
+            
+            // 如果没有未分类答案，显示空状态
+            if (uncategorizedAnswers.length === 0 && viewMode !== 'byCategory') {
+                uncategorizedContainer.innerHTML = `
+                    <div class="empty-state" id="no-answers-message">
+                        <i class="fas fa-inbox"></i>
+                        <h3>暂无未分类答案</h3>
+                        <p>所有答案已分类或等待小组提交答案...</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 移除空状态消息
+            if (noAnswersMessage && noAnswersMessage.parentNode) {
+                noAnswersMessage.remove();
+            }
+            
+            // 渲染每个未分类答案卡片
+            uncategorizedAnswers.forEach(answer => {
+                const group = groups.find(g => g.id === answer.groupId);
+                
+                const answerCard = document.createElement('div');
+                answerCard.className = 'answer-card';
+                answerCard.setAttribute('draggable', 'true');
+                answerCard.setAttribute('data-answer-id', answer.id);
+                
+                // 检查是否为错误答案（示例中的错误答案）
+                const isErrorAnswer = answer.phenomenonDesc === '错误示例';
+                
+                answerCard.innerHTML = `
+                    <div class="answer-card-header">
+                        <div class="answer-group-avatar" style="background: linear-gradient(135deg, ${group.color}, ${adjustColor(group.color, -20)})">${group.avatar}</div>
+                        <div class="answer-group-name">${group.name}</div>
+                        <div class="answer-time">${answer.timestamp}</div>
+                    </div>
+                    
+                    <button class="answer-delete-btn" data-answer-id="${answer.id}" title="删除此答案">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    
+                    <div class="answer-content">
+                        <div class="phenomenon-display">
+                            <span class="phenomenon-label-sm">现象：</span>
+                            <span class="phenomenon-desc">${answer.phenomenonDesc}</span>
+                        </div>
+                        <div class="energy-conversion-display">
+                            <div class="energy-conversion-text">
+                                <span class="energy-fill">${answer.energy1}</span> 能转化为 <span class="energy-fill">${answer.energy2}</span> 能。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-footer">
+                        <div>
+                            ${isErrorAnswer ? '<span class="answer-error-tag">错误答案示例</span>' : ''}
+                        </div>
+                        <div class="answer-category">未分类</div>
+                    </div>
+                `;
+                
+                uncategorizedContainer.appendChild(answerCard);
+                
+                // 添加拖拽事件
+                setupDragEvents(answerCard);
+                
+                // 添加删除按钮事件
+                const deleteBtn = answerCard.querySelector('.answer-delete-btn');
+                deleteBtn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 防止触发拖拽事件
+                    const answerId = parseInt(this.getAttribute('data-answer-id'));
+                    confirmDeleteAnswer(answerId);
+                });
+            });
+        }
+        
+        // 渲染按分类查看的答案
+        function renderAnswersByCategory() {
+            // 清空未分类区域
+            uncategorizedContainer.innerHTML = '';
+            
+            // 更新每个分类区域的答案
+            categories.forEach(category => {
+                const categoryAnswersContainer = document.getElementById(`answers-${category.id}`);
+                if (categoryAnswersContainer) {
+                    categoryAnswersContainer.innerHTML = '';
+                    
+                    // 筛选属于该分类的答案
+                    const categoryAnswers = answers.filter(answer => answer.categoryId === category.id);
+                    
+                    // 更新计数
+                    const countElement = document.getElementById(`count-${category.id}`);
+                    if (countElement) {
+                        countElement.textContent = `${categoryAnswers.length}个答案`;
+                    }
+                    
+                    // 如果没有答案，显示空状态
+                    if (categoryAnswers.length === 0) {
+                        categoryAnswersContainer.innerHTML = `
+                            <div class="category-empty">暂无答案，可将答案拖拽到此处</div>
+                        `;
+                        return;
+                    }
+                    
+                    // 渲染每个答案卡片
+                    categoryAnswers.forEach(answer => {
+                        const group = groups.find(g => g.id === answer.groupId);
+                        
+                        const answerCard = document.createElement('div');
+                        answerCard.className = 'answer-card';
+                        answerCard.setAttribute('draggable', 'true');
+                        answerCard.setAttribute('data-answer-id', answer.id);
+                        
+                        // 检查是否为错误答案
+                        const isErrorAnswer = answer.phenomenonDesc === '错误示例';
+                        
+                        answerCard.innerHTML = `
+                            <div class="answer-card-header">
+                                <div class="answer-group-avatar" style="background: linear-gradient(135deg, ${group.color}, ${adjustColor(group.color, -20)})">${group.avatar}</div>
+                                <div class="answer-group-name">${group.name}</div>
+                                <div class="answer-time">${answer.timestamp}</div>
+                            </div>
+                            
+                            <button class="answer-delete-btn" data-answer-id="${answer.id}" title="删除此答案">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            
+                            <div class="answer-content">
+                                <div class="phenomenon-display">
+                                    <span class="phenomenon-label-sm">现象：</span>
+                                    <span class="phenomenon-desc">${answer.phenomenonDesc}</span>
+                                </div>
+                                <div class="energy-conversion-display">
+                                    <div class="energy-conversion-text">
+                                        <span class="energy-fill">${answer.energy1}</span> 能转化为 <span class="energy-fill">${answer.energy2}</span> 能。
+                                    </div>
+                                </div>
+                            </div>
+                            ${isErrorAnswer ? '<div class="answer-footer"><span class="answer-error-tag">错误答案示例</span></div>' : ''}
+                        `;
+                        
+                        categoryAnswersContainer.appendChild(answerCard);
+                        
+                        // 添加拖拽事件
+                        setupDragEvents(answerCard);
+                        
+                        // 添加删除按钮事件
+                        const deleteBtn = answerCard.querySelector('.answer-delete-btn');
+                        deleteBtn.addEventListener('click', function(e) {
+                            e.stopPropagation(); // 防止触发拖拽事件
+                            const answerId = parseInt(this.getAttribute('data-answer-id'));
+                            confirmDeleteAnswer(answerId);
+                        });
+                    });
+                }
+            });
+        }
+        
+        // 设置拖拽事件
+        function setupDragEvents(element) {
+            element.addEventListener('dragstart', function(e) {
+                this.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', this.getAttribute('data-answer-id'));
+            });
+            
+            element.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+            });
+        }
+        
+        // 确认删除答案
+        function confirmDeleteAnswer(answerId) {
+            const answer = answers.find(a => a.id === answerId);
+            if (!answer) return;
+            
+            const group = groups.find(g => g.id === answer.groupId);
+            answerToDelete = answerId;
+            
+            // 设置确认消息
+            deleteConfirmationMessage.innerHTML = `
+                您确定要删除 <strong>${group.name}</strong> 的答案吗？<br>
+                <em>"现象：${answer.phenomenonDesc}<br>
+                ${answer.energy1} 能转化为 ${answer.energy2} 能。"</em><br><br>
+                此操作不可撤销。
+            `;
+            
+            // 显示确认对话框
+            deleteConfirmation.style.display = 'flex';
+        }
+        
+        // 执行删除答案
+        function deleteAnswer(answerId) {
+            const answerIndex = answers.findIndex(a => a.id === answerId);
+            if (answerIndex !== -1) {
+                // 从答案数组中删除
+                answers.splice(answerIndex, 1);
+                
+                // 更新UI
+                if (viewMode === 'all' || viewMode === 'uncategorized') {
+                    renderUncategorizedAnswers();
+                } else if (viewMode === 'byCategory') {
+                    renderAnswersByCategory();
+                }
+                
+                updateStats();
+                
+                // 显示通知
+                showNotification('答案已删除', 'warning', 'fa-trash-alt');
+            }
+        }
+        
+        // 更新答案分类
+        function updateAnswerCategory(answerId, categoryId) {
+            const answerIndex = answers.findIndex(a => a.id === answerId);
+            if (answerIndex !== -1) {
+                answers[answerIndex].categoryId = categoryId;
+                
+                // 更新UI
+                if (viewMode === 'all' || viewMode === 'uncategorized') {
+                    renderUncategorizedAnswers();
+                } else if (viewMode === 'byCategory') {
+                    renderAnswersByCategory();
+                }
+                
+                updateStats();
+                
+                // 显示动画效果
+                if (animationsEnabled) {
+                    const category = categories.find(c => c.id === categoryId);
+                    showNotification(`答案已分类到"${category.name}"`, 'success', 'fa-tag');
+                }
+            }
+        }
+        
+        // 提交答案
+        submitBtn.addEventListener('click', function() {
+            const phenomenonDesc = phenomenonDescInput.value.trim();
+            const energy1 = energyInput1.value.trim();
+            const energy2 = energyInput2.value.trim();
+            
+            if (!phenomenonDesc) {
+                showNotification('请输入现象描述', 'warning', 'fa-exclamation-triangle');
+                phenomenonDescInput.focus();
+                return;
+            }
+            
+            if (!energy1) {
+                showNotification('请输入转化前的能量形式', 'warning', 'fa-exclamation-triangle');
+                energyInput1.focus();
+                return;
+            }
+            
+            if (!energy2) {
+                showNotification('请输入转化后的能量形式', 'warning', 'fa-exclamation-triangle');
+                energyInput2.focus();
+                return;
+            }
+            
+            if (!connectionStatus) {
+                showNotification('连接已断开，无法提交答案', 'warning', 'fa-exclamation-triangle');
+                return;
+            }
+            
+            // 创建新答案
+            const newAnswer = {
+                id: answers.length + 1,
+                groupId: currentGroup.id,
+                phenomenonDesc: phenomenonDesc,
+                energy1: energy1,
+                energy2: energy2,
+                categoryId: null, // 初始未分类
+                timestamp: getCurrentTime(),
+                color: currentGroup.color
+            };
+            
+            // 添加到答案列表
+            answers.push(newAnswer);
+            
+            // 清空输入框
+            phenomenonDescInput.value = '';
+            energyInput1.value = '';
+            energyInput2.value = '';
+            
+            // 将焦点移回第一个输入框
+            phenomenonDescInput.focus();
+            
+            // 更新UI
+            if (viewMode === 'all' || viewMode === 'uncategorized') {
+                renderUncategorizedAnswers();
+            }
+            updateStats();
+            
+            // 显示提交成功提示
+            showNotification('答案提交成功！', 'success', 'fa-check-circle');
+        });
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 筛选按钮
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.getAttribute('data-filter');
+                    if (filter === 'all') {
+                        viewMode = 'all';
+                        // 显示所有答案（未分类的）
+                        renderUncategorizedAnswers();
+                        // 显示分类区域
+                        categoryAreas.style.display = 'block';
+                        uncategorizedContainer.style.display = 'grid';
+                    } else if (filter === 'uncategorized') {
+                        viewMode = 'uncategorized';
+                        // 只显示未分类答案
+                        renderUncategorizedAnswers();
+                        // 隐藏分类区域
+                        categoryAreas.style.display = 'none';
+                        uncategorizedContainer.style.display = 'grid';
+                    }
+                });
+            });
+            
+            // 按分类查看按钮
+            document.getElementById('show-by-category').addEventListener('click', function() {
+                if (categories.length === 0) {
+                    showNotification('请先添加分类', 'warning', 'fa-exclamation-triangle');
+                    return;
+                }
+                
+                filterButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                viewMode = 'byCategory';
+                // 隐藏未分类区域
+                uncategorizedContainer.style.display = 'none';
+                // 显示分类区域
+                categoryAreas.style.display = 'block';
+                // 渲染按分类查看的答案
+                renderAnswersByCategory();
+            });
+            
+            // 添加分类按钮
+            addCategoryBtn.addEventListener('click', function() {
+                addCategory(categoryInput.value);
+            });
+            
+            // 按Enter键添加分类
+            categoryInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    addCategoryBtn.click();
+                }
+            });
+            
+            // 切换动画
+            document.getElementById('toggle-animations').addEventListener('click', function() {
+                animationsEnabled = !animationsEnabled;
+                this.innerHTML = animationsEnabled ? 
+                    '<i class="fas fa-pause-circle"></i> 关闭动画' : 
+                    '<i class="fas fa-play-circle"></i> 开启动画';
+                showNotification(`动画效果已${animationsEnabled ? '开启' : '关闭'}`, 'info', 'fa-play-circle');
+            });
+            
+            // 清空所有
+            document.getElementById('clear-all').addEventListener('click', function() {
+                if (confirm('确定要清空所有答案和分类吗？此操作不可撤销。')) {
+                    answers = [];
+                    categories = [];
+                    
+                    // 清空分类列表
+                    categoriesList.innerHTML = '';
+                    
+                    // 清空分类区域
+                    categoryAreas.innerHTML = '';
+                    
+                    // 显示"暂无分类"消息
+                    if (noCategoriesMessage) {
+                        noCategoriesMessage.style.display = 'block';
+                    }
+                    
+                    // 重置视图模式
+                    viewMode = 'all';
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    document.querySelector('[data-filter="all"]').classList.add('active');
+                    
+                    // 更新UI
+                    renderUncategorizedAnswers();
+                    updateStats();
+                    
+                    showNotification('所有答案和分类已清空', 'warning', 'fa-trash-alt');
+                }
+            });
+            
+            // 导出数据
+            document.getElementById('export-data').addEventListener('click', function() {
+                const data = {
+                    answers: answers,
+                    categories: categories,
+                    exportTime: new Date().toLocaleString()
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `课堂答题数据_${new Date().getTime()}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                showNotification('数据导出成功', 'success', 'fa-download');
+            });
+            
+            // 模拟小组
+            document.getElementById('simulate-groups').addEventListener('click', function() {
+                simulateGroupAnswers();
+            });
+            
+            // 切换连接状态
+            document.getElementById('toggle-connection').addEventListener('click', function() {
+                connectionStatus = !connectionStatus;
+                
+                const connectionStatusEl = document.querySelector('.connection-status');
+                const btnIcon = this.querySelector('i');
+                const btnText = this.querySelector('span');
+                
+                if (connectionStatus) {
+                    connectionStatusEl.className = 'connection-status connected';
+                    connectionStatusEl.innerHTML = '<i class="fas fa-wifi"></i><span>已连接</span>';
+                    btnIcon.className = 'fas fa-plug';
+                    btnText.textContent = '断开连接';
+                    showNotification('连接已恢复', 'success', 'fa-wifi');
+                } else {
+                    connectionStatusEl.className = 'connection-status disconnected';
+                    connectionStatusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>连接断开</span>';
+                    btnIcon.className = 'fas fa-wifi';
+                    btnText.textContent = '重新连接';
+                    showNotification('连接已断开', 'warning', 'fa-exclamation-triangle');
+                }
+            });
+            
+            // 按Enter键切换输入框
+            phenomenonDescInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    energyInput1.focus();
+                }
+            });
+            
+            energyInput1.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    energyInput2.focus();
+                }
+            });
+            
+            energyInput2.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    submitBtn.click();
+                }
+            });
+            
+            // 删除确认按钮事件
+            deleteConfirmBtn.addEventListener('click', function() {
+                if (answerToDelete) {
+                    deleteAnswer(answerToDelete);
+                    answerToDelete = null;
+                }
+                deleteConfirmation.style.display = 'none';
+            });
+            
+            // 删除取消按钮事件
+            deleteCancelBtn.addEventListener('click', function() {
+                answerToDelete = null;
+                deleteConfirmation.style.display = 'none';
+            });
+            
+            // 点击对话框外部关闭
+            deleteConfirmation.addEventListener('click', function(e) {
+                if (e.target === deleteConfirmation) {
+                    answerToDelete = null;
+                    deleteConfirmation.style.display = 'none';
+                }
+            });
+            
+            // 按ESC键关闭对话框
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && deleteConfirmation.style.display === 'flex') {
+                    answerToDelete = null;
+                    deleteConfirmation.style.display = 'none';
+                }
+            });
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            // 在线小组数
+            const onlineCount = groups.length;
+            onlineCountEl.textContent = onlineCount;
+            statOnlineEl.textContent = onlineCount;
+            
+            // 答案总数
+            const answerCount = answers.length;
+            answerCountEl.textContent = answerCount;
+            statAnswersEl.textContent = answerCount;
+            
+            // 已分类答案百分比
+            const classifiedCount = answers.filter(a => a.categoryId !== null).length;
+            const classifiedPercent = answerCount > 0 ? Math.round((classifiedCount / answerCount) * 100) : 0;
+            statClassifiedEl.textContent = `${classifiedPercent}%`;
+            
+            // 更新每个分类的答案计数
+            categories.forEach(category => {
+                const categoryAnswers = answers.filter(answer => answer.categoryId === category.id);
+                const countElement = document.getElementById(`count-${category.id}`);
+                if (countElement) {
+                    countElement.textContent = `${categoryAnswers.length}个答案`;
+                }
+            });
+        }
+        
+        // 模拟实时更新
+        function simulateRealTimeUpdates() {
+            // 每30秒随机添加一个答案
+            setInterval(() => {
+                if (answers.length < 20 && Math.random() > 0.7) {
+                    const randomGroup = groups[Math.floor(Math.random() * groups.length)];
+                    const phenomena = ['水力发电', '太阳能电池', '电池放电', '电灯发光', '电动机工作', '发电机发电', '光合作用', '燃烧燃料', '摩擦生热', '电热水器'];
+                    const energyTypes1 = ['机械', '太阳', '化学', '电', '电', '机械', '光', '化学', '机械', '电'];
+                    const energyTypes2 = ['电', '电', '电', '光', '机械', '电', '化学', '热', '热', '热'];
+                    
+                    const randomIndex = Math.floor(Math.random() * phenomena.length);
+                    
+                    const newAnswer = {
+                        id: answers.length + 1,
+                        groupId: randomGroup.id,
+                        phenomenonDesc: phenomena[randomIndex],
+                        energy1: energyTypes1[randomIndex],
+                        energy2: energyTypes2[randomIndex],
+                        categoryId: null,
+                        timestamp: getCurrentTime(),
+                        color: randomGroup.color
+                    };
+                    
+                    answers.push(newAnswer);
+                    
+                    // 更新UI
+                    if (viewMode === 'all' || viewMode === 'uncategorized') {
+                        renderUncategorizedAnswers();
+                    }
+                    
+                    updateStats();
+                    
+                    // 显示新答案通知
+                    if (animationsEnabled) {
+                        showNotification(`${randomGroup.name} 提交了新答案`, 'info', 'fa-comment-alt');
+                    }
+                }
+            }, 30000);
+        }
+        
+        // 模拟小组答案
+        function simulateGroupAnswers() {
+            const phenomena = ['水力发电', '太阳能电池', '电池放电', '电灯发光', '电动机工作', '发电机发电', '光合作用', '燃烧燃料', '摩擦生热', '电热水器'];
+            const energyTypes1 = ['机械', '太阳', '化学', '电', '电', '机械', '光', '化学', '机械', '电'];
+            const energyTypes2 = ['电', '电', '电', '光', '机械', '电', '化学', '热', '热', '热'];
+            
+            // 随机选择3-5个小组提交答案
+            const numAnswers = Math.floor(Math.random() * 3) + 3;
+            
+            for (let i = 0; i < numAnswers; i++) {
+                setTimeout(() => {
+                    const randomGroup = groups[Math.floor(Math.random() * groups.length)];
+                    const randomIndex = Math.floor(Math.random() * phenomena.length);
+                    
+                    const newAnswer = {
+                        id: answers.length + 1,
+                        groupId: randomGroup.id,
+                        phenomenonDesc: phenomena[randomIndex],
+                        energy1: energyTypes1[randomIndex],
+                        energy2: energyTypes2[randomIndex],
+                        categoryId: null,
+                        timestamp: getCurrentTime(),
+                        color: randomGroup.color
+                    };
+                    
+                    answers.push(newAnswer);
+                    
+                    // 更新UI
+                    if (viewMode === 'all' || viewMode === 'uncategorized') {
+                        renderUncategorizedAnswers();
+                    }
+                    
+                    updateStats();
+                    
+                    // 显示通知
+                    showNotification(`${randomGroup.name} 提交了答案`, 'info', 'fa-user-edit');
+                }, i * 800);
+            }
+            
+            showNotification(`已模拟${numAnswers}个小组提交答案`, 'success', 'fa-users');
+        }
+        
+        // 获取当前时间
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+        // 调整颜色亮度
+        function adjustColor(color, amount) {
+            const hex = color.replace('#', '');
+            const num = parseInt(hex, 16);
+            let r = (num >> 16) + amount;
+            let g = ((num >> 8) & 0x00FF) + amount;
+            let b = (num & 0x0000FF) + amount;
+            
+            r = Math.min(Math.max(0, r), 255);
+            g = Math.min(Math.max(0, g), 255);
+            b = Math.min(Math.max(0, b), 255);
+            
+            return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+        }
+        
+        // 显示通知
+        function showNotification(message, type, icon) {
+            // 移除之前的通知
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.classList.add('hiding');
+                setTimeout(() => {
+                    if (existingNotification.parentNode) {
+                        existingNotification.parentNode.removeChild(existingNotification);
+                    }
+                }, 300);
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const iconClass = icon || (type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+            
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="fas ${iconClass}"></i>
+                </div>
+                <div>${message}</div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                notification.classList.add('hiding');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
